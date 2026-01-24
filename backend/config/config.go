@@ -11,7 +11,6 @@ import (
 type Config struct {
 	DatabaseURL string
 	JWTSecret   string
-	RedisURL    string
 	StockAPIKey string
 	Port        string
 }
@@ -25,7 +24,6 @@ func Load() Config {
 	cfg := Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 		JWTSecret:   os.Getenv("JWT_SECRET"),
-		RedisURL:    os.Getenv("REDIS_URL"),
 		StockAPIKey: os.Getenv("STOCK_API_KEY"),
 		Port:        os.Getenv("PORT"),
 	}
@@ -36,9 +34,6 @@ func Load() Config {
 	}
 	if cfg.JWTSecret == "" {
 		log.Fatal("JWT_SECRET is required")
-	}
-	if cfg.RedisURL == "" {
-		log.Fatal("REDIS_URL is required")
 	}
 	if cfg.StockAPIKey == "" {
 		log.Fatal("STOCK_API_KEY is required")

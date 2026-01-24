@@ -55,3 +55,4 @@ body {
   @apply bg-background text-foreground min-h-screen antialiased;
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
+

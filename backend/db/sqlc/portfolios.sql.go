@@ -7,23 +7,123 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createPortfolio = `-- name: CreatePortfolio :one
 INSERT INTO portfolios (user_id, cash_balance)
-VALUES ($1, coalesce($2, 100000.00))
+VALUES ($1, $2)
 RETURNING id, user_id, cash_balance, created_at, updated_at
 `
 
 type CreatePortfolioParams struct {
-	UserID  uuid.UUID   `db:"user_id" json:"user_id"`
-	Column2 interface{} `db:"column_2" json:"column_2"`
+	UserID      uuid.UUID `db:"user_id" json:"user_id"`
+	CashBalance string    `db:"cash_balance" json:"cash_balance"`
 }
 
 func (q *Queries) CreatePortfolio(ctx context.Context, arg CreatePortfolioParams) (Portfolio, error) {
-	row := q.db.QueryRowContext(ctx, createPortfolio, arg.UserID, arg.Column2)
+	row := q.db.QueryRowContext(ctx, createPortfolio, arg.UserID, arg.CashBalance)
+	var i Portfolio
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CashBalance,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAllPortfolios = `-- name: GetAllPortfolios :many
+SELECT id, user_id, cash_balance, created_at, updated_at FROM portfolios
+ORDER BY created_at
+`
+
+func (q *Queries) GetAllPortfolios(ctx context.Context) ([]Portfolio, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPortfolios)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Portfolio{}
+	for rows.Next() {
+		var i Portfolio
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CashBalance,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllPortfoliosWithUsers = `-- name: GetAllPortfoliosWithUsers :many
+SELECT p.id, p.user_id, p.cash_balance, p.created_at, p.updated_at, u.username
+FROM portfolios p
+JOIN users u ON u.id = p.user_id
+ORDER BY p.created_at
+`
+
+type GetAllPortfoliosWithUsersRow struct {
+	ID          uuid.UUID    `db:"id" json:"id"`
+	UserID      uuid.UUID    `db:"user_id" json:"user_id"`
+	CashBalance string       `db:"cash_balance" json:"cash_balance"`
+	CreatedAt   time.Time    `db:"created_at" json:"created_at"`
+	UpdatedAt   sql.NullTime `db:"updated_at" json:"updated_at"`
+	Username    string       `db:"username" json:"username"`
+}
+
+func (q *Queries) GetAllPortfoliosWithUsers(ctx context.Context) ([]GetAllPortfoliosWithUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPortfoliosWithUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllPortfoliosWithUsersRow{}
+	for rows.Next() {
+		var i GetAllPortfoliosWithUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CashBalance,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPortfolioByID = `-- name: GetPortfolioByID :one
+SELECT id, user_id, cash_balance, created_at, updated_at FROM portfolios
+WHERE id = $1
+`
+
+func (q *Queries) GetPortfolioByID(ctx context.Context, id uuid.UUID) (Portfolio, error) {
+	row := q.db.QueryRowContext(ctx, getPortfolioByID, id)
 	var i Portfolio
 	err := row.Scan(
 		&i.ID,
