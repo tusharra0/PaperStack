@@ -1,128 +1,217 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import StockSearch from "@/components/StockSearch";
 import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  History,
+  Trophy,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown,
+  TrendingUp,
+} from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
+    setUserMenuOpen(false);
     router.push("/login");
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-      <div className="container flex h-14 items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            className="lg:hidden rounded-md border px-2 py-1"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Toggle navigation"
-          >
-            ?
-          </button>
-          <Link href="/" className="text-lg font-bold tracking-tight">
-            PaperStack
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-sm">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left side - Logo and Search */}
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            {/* Removed the colored square logo for a cleaner text-only look per "very basic" request */}
+            <span className="text-xl font-bold tracking-tight text-foreground">PaperStack</span>
           </Link>
-          <div className="hidden lg:block w-64">
+
+          <div className="hidden md:block w-72">
             <StockSearch compact />
           </div>
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
-          {user ? (
-            <>
-              <Link href="/dashboard" className="hover:text-primary">
-                Dashboard
-              </Link>
-              <Link href="/history" className="hover:text-primary">
-                History
-              </Link>
-              <Link href="/leaderboard" className="hover:text-primary">
-                Leaderboard
-              </Link>
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-md border px-3 py-1 text-sm",
-                    userMenuOpen && "bg-muted"
-                  )}
-                >
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  {user.username}
-                </button>
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 rounded-md border bg-popover p-2 text-sm shadow-lg">
-                    <Link href="/dashboard" className="block rounded px-2 py-1 hover:bg-muted">
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="mt-1 w-full rounded px-2 py-1 text-left text-red-600 hover:bg-muted"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link href="/login" className="hover:text-primary">
-                Login
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-md bg-primary px-3 py-1 text-primary-foreground shadow hover:bg-primary/90"
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
-        </nav>
-      </div>
-
-      {menuOpen && (
-        <div className="lg:hidden border-t border-border bg-background">
-          <div className="container space-y-3 py-3">
-            <StockSearch compact />
+        {/* Right side - Navigation */}
+        <div className="flex items-center gap-2">
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-1 lg:flex">
             {user ? (
               <>
-                <Link href="/dashboard" className="block rounded px-2 py-2 hover:bg-muted">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Link>
-                <Link href="/history" className="block rounded px-2 py-2 hover:bg-muted">
+                <Link
+                  href="/history"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <History className="h-4 w-4" />
                   History
                 </Link>
-                <Link href="/leaderboard" className="block rounded px-2 py-2 hover:bg-muted">
+                <Link
+                  href="/leaderboard"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Trophy className="h-4 w-4" />
                   Leaderboard
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full rounded px-2 py-2 text-left text-red-600 hover:bg-muted"
-                >
-                  Logout
-                </button>
+
+                {/* User Menu */}
+                <div className="relative ml-2" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg border border-border/50 bg-muted/50 px-3 py-2 text-sm font-medium transition-all hover:bg-muted",
+                      userMenuOpen && "bg-muted border-border"
+                    )}
+                  >
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="max-w-[100px] truncate">{user.username}</span>
+                    <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", userMenuOpen && "rotate-180")} />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-popover shadow-lg animate-in fade-in-0 zoom-in-95">
+                      <div className="border-b border-border px-4 py-3">
+                        <p className="text-sm font-medium">{user.username}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                      <div className="p-1">
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/10"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Log out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
-              <div className="flex gap-3">
-                <Link href="/login" className="w-full rounded px-2 py-2 text-center hover:bg-muted">
-                  Login
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Log in
                 </Link>
                 <Link
                   href="/register"
-                  className="w-full rounded bg-primary px-3 py-2 text-center text-primary-foreground shadow hover:bg-primary/90"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md"
                 >
-                  Register
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/50 lg:hidden"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Toggle navigation"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="border-t border-border bg-background lg:hidden animate-in slide-in-from-top-2">
+          <div className="container space-y-4 py-4">
+            <StockSearch compact />
+
+            {user ? (
+              <div className="space-y-1">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </Link>
+                <Link
+                  href="/history"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <History className="h-4 w-4" />
+                  History
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <Trophy className="h-4 w-4" />
+                  Leaderboard
+                </Link>
+                <div className="my-2 border-t border-border" />
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/10"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                >
+                  Get Started
                 </Link>
               </div>
             )}
@@ -134,4 +223,3 @@ export function Navbar() {
 }
 
 export default Navbar;
-

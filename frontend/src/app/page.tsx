@@ -1,81 +1,221 @@
-export default function Home() {
-  const features = [
-    {
-      title: "$100K virtual bankroll",
-      description: "Start with house money and experiment without risking real cash.",
-    },
-    {
-      title: "Real market prices",
-      description: "Trade against live quotes and see how your strategies perform.",
-    },
-    {
-      title: "Track everything",
-      description: "Holdings, history, and performance snapshots auto-updated for you.",
-    },
-    {
-      title: "Compete & climb",
-      description: "Challenge friends and chase medals on the global leaderboard.",
-    },
-  ];
+"use client";
 
-  const steps = [
-    "Create your free account",
-    "Search any stock and place paper trades",
-    "Watch your portfolio change in real time",
-    "Take the top spot on the leaderboard",
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import {
+  TrendingUp,
+  Shield,
+  Trophy,
+  BarChart3,
+  ArrowRight,
+  Zap,
+  Target,
+  Users,
+  Sparkles,
+} from "lucide-react";
+import { getLeaderboard } from "@/lib/api";
+import type { LeaderboardEntry } from "@/types";
+
+// Lazy load TradingView widgets for better performance
+const TickerTape = dynamic(
+  () => import("@/components/tradingview/TickerTape"),
+  { ssr: false }
+);
+const SymbolOverview = dynamic(
+  () => import("@/components/tradingview/SymbolOverview"),
+  { ssr: false }
+);
+const MarketOverview = dynamic(
+  () => import("@/components/tradingview/MarketOverview"),
+  { ssr: false }
+);
+const StockHeatmap = dynamic(
+  () => import("@/components/tradingview/StockHeatmap"),
+  { ssr: false }
+);
+
+const features = [
+  {
+    icon: Shield,
+    title: "Risk-Free Trading",
+    description:
+      "Start with $100K virtual cash. Learn strategies without risking real money.",
+  },
+  {
+    icon: Zap,
+    title: "Real-Time Data",
+    description:
+      "Trade with live market prices powered by professional-grade market data.",
+  },
+  {
+    icon: BarChart3,
+    title: "Track Performance",
+    description:
+      "Monitor your portfolio with detailed analytics and performance charts.",
+  },
+  {
+    icon: Trophy,
+    title: "Compete & Win",
+    description:
+      "Climb the leaderboard and prove your trading skills against others.",
+  },
+];
+
+const stats = [
+  { value: "$100K", label: "Starting Capital" },
+  { value: "Live", label: "Market Data" },
+  { value: "Free", label: "Forever" },
+];
+
+export default function Home() {
+  // Hardcoded fake leaderboard as requested
+  const leaderboard: LeaderboardEntry[] = [
+    { username: "Tushar Rao", total_return_percent: 142.5, rank: 1, total_value: 242500 },
+    { username: "Tashiana Laluces", total_return_percent: 128.3, rank: 2, total_value: 228300 },
+    { username: "Trader_992", total_return_percent: 89.4, rank: 3, total_value: 189400 },
+    { username: "CryptoWhale00", total_return_percent: 76.1, rank: 4, total_value: 176100 },
+    { username: "StockMaster_55", total_return_percent: 62.8, rank: 5, total_value: 162800 },
   ];
 
   return (
-    <div className="space-y-16">
-      <section className="overflow-hidden rounded-3xl border bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-12 text-white shadow-xl">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
-          <div className="space-y-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-300">Paper trading, gamified</p>
-            <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-              Learn to trade with zero risk and beat the market with friends.
-            </h1>
-            <p className="text-lg text-slate-200">
-              PaperStack gives you $100,000 in virtual cash, live prices, and a daily-updated leaderboard so you can
-              practice, compete, and build confidence before touching real money.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="/register"
-                className="rounded-lg bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:translate-y-[-1px] hover:bg-emerald-300"
-              >
-                Get Started Free
-              </a>
-              <a
-                href="/dashboard"
-                className="rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                View Dashboard
-              </a>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+      {/* Ticker Tape - Sticky below navbar */}
+      <div className="sticky top-16 z-30 bg-background border-b border-white/5">
+        <TickerTape />
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-20 pb-20 lg:pt-32 lg:pb-32">
+        <div className="container relative">
+          <div className="grid gap-16 lg:grid-cols-2 items-center">
+            {/* Left - Content */}
+            <div className="space-y-8">
+              <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+                Master the market
+                <span className="block text-primary">
+                  without the risk
+                </span>
+              </h1>
+
+              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+                Practice trading with $100K virtual cash and real-time market data.
+                Test strategies, build confidence, compete with friends.
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-8 py-4 text-base font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Start Trading Free
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-lg px-8 py-4 text-base font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  View Dashboard
+                </Link>
+              </div>
+
+              {/* Stats */}
+              <div className="flex gap-12 pt-8">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <p className="text-3xl font-bold text-white">
+                      {stat.value}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-4 text-sm text-slate-300">
-              <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-emerald-100">Live prices</span>
-              <span className="rounded-full bg-white/10 px-3 py-1">Leaderboard medals</span>
+
+            {/* Right - Symbol Overview Widget (Seamless - No Border/Card) */}
+            <div className="relative hidden lg:block">
+              {/* Removed gradient glow */}
+              <div className="relative overflow-hidden grayscale-[50%] hover:grayscale-0 transition-all duration-500">
+                <SymbolOverview
+                  symbols={[
+                    ["Apple", "AAPL|1D"],
+                    ["Microsoft", "MSFT|1D"],
+                    ["NVIDIA", "NVDA|1D"],
+                  ]}
+                  height={400}
+                />
+              </div>
             </div>
           </div>
-          <div className="relative hidden overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl lg:block">
-            <div className="mb-4 flex items-center justify-between text-sm text-slate-200">
-              <span>Sample Portfolio</span>
-              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-100">+5.6% today</span>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-24">
+        <div className="container">
+          <div className="mx-auto max-w-2xl text-center mb-16">
+            <h2 className="text-4xl font-bold tracking-tight mb-4 text-white">
+              Professional Tools
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Everything you need to master the markets.
+            </p>
+          </div>
+
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="group relative p-4 transition-all hover:bg-white/5 rounded-xl"
+              >
+                <div className="mb-4 text-primary">
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2 text-white">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leaderboard Preview (Seamless) */}
+      <section className="py-24">
+        <div className="container">
+          <div className="grid gap-16 lg:grid-cols-2 items-center">
+            <div>
+              <h2 className="text-4xl font-bold tracking-tight mb-4 text-white">
+                Leaderboard
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                Compete with top traders worldwide.
+              </p>
+              <Link
+                href="/leaderboard"
+                className="group inline-flex items-center gap-2 text-base font-semibold text-primary hover:opacity-80"
+              >
+                View Full Leaderboard
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
-            <div className="space-y-3 text-sm">
-              {["AAPL", "MSFT", "NVDA", "TSLA", "GOOGL"].map((sym, idx) => (
-                <div key={sym} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
-                  <div>
-                    <p className="font-semibold text-white">{sym}</p>
-                    <p className="text-xs text-slate-300">{[50, 30, 12, 15, 18][idx]} shares</p>
+
+            <div className="space-y-2">
+              {leaderboard.map((entry, idx) => (
+                <div
+                  key={entry.username}
+                  className="flex items-center justify-between px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className={`font-mono text-sm ${idx < 3 ? "text-primary" : "text-muted-foreground"}`}>
+                      #{entry.rank}
+                    </span>
+                    <span className="font-medium text-lg text-gray-200">{entry.username}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-white">${[8925, 10430, 6210, 3980, 7150][idx].toLocaleString()}</p>
-                    <p className={`text-xs ${idx % 2 === 0 ? "text-emerald-300" : "text-red-300"}`}>
-                      {idx % 2 === 0 ? "+" : "-"}
-                      {(1.1 + idx * 0.3).toFixed(1)}%
-                    </p>
-                  </div>
+                  <span className="text-base font-medium text-primary">
+                    +{entry.total_return_percent.toFixed(2)}%
+                  </span>
                 </div>
               ))}
             </div>
@@ -83,71 +223,88 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-8">
-        <div className="space-y-2 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">Why PaperStack</p>
-          <h2 className="text-3xl font-bold">Designed for learning & competition</h2>
-          <p className="text-muted-foreground">Everything you need to practice trading safely and stay motivated.</p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature) => (
-            <div key={feature.title} className="rounded-2xl border bg-card p-5 shadow-sm transition hover:-translate-y-1">
-              <h3 className="text-lg font-semibold">{feature.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
+      {/* How It Works */}
+      <section className="py-24 border-t border-border/40">
+        <div className="container">
+          <div className="mx-auto max-w-2xl text-center mb-16">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground mb-6">
+              Getting Started
             </div>
-          ))}
+            <h2 className="text-4xl font-bold tracking-tight mb-4">
+              Start trading in minutes
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              No credit card required. Get $100K virtual cash instantly.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                step: "01",
+                title: "Create Account",
+                description: "Sign up in seconds with just your email.",
+              },
+              {
+                step: "02",
+                title: "Find Stocks",
+                description: "Search any symbol and view real-time quotes.",
+              },
+              {
+                step: "03",
+                title: "Start Trading",
+                description: "Buy and sell with virtual cash. Track your performance.",
+              },
+            ].map((item, idx) => (
+              <div key={item.step} className="relative">
+                {idx < 2 && (
+                  <div className="absolute left-1/2 top-12 hidden h-px w-full bg-gradient-to-r from-border via-border/50 to-transparent md:block" />
+                )}
+                <div className="relative rounded-2xl border border-border/50 bg-card/50 p-8 text-center transition-all hover:bg-card hover:border-border">
+                  <span className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-3xl font-bold text-primary mb-6">
+                    {item.step}
+                  </span>
+                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl space-y-6 rounded-3xl border bg-muted/40 p-8">
-        <h2 className="text-2xl font-bold">How it works</h2>
-        <ol className="grid gap-4 md:grid-cols-2">
-          {steps.map((step, idx) => (
-            <li key={step} className="flex gap-3 rounded-2xl bg-background p-4 shadow-sm">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                {idx + 1}
-              </span>
-              <div>
-                <p className="font-semibold">{step}</p>
-                <p className="text-sm text-muted-foreground">
-                  {idx === 1
-                    ? "Search any symbol, get live quotes, and place simulated orders."
-                    : idx === 2
-                    ? "Track performance with charts, snapshots, and live price updates."
-                    : idx === 3
-                    ? "Refresh the leaderboard every few minutes and brag about your rank."
-                    : "Sign up in seconds—no credit card required."}
-                </p>
+      {/* Final CTA */}
+      <section className="py-24 border-t border-border/40">
+        <div className="container">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-blue-600 to-emerald-600 px-8 py-20 text-center shadow-2xl">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent_70%)]" />
+            <div className="relative">
+              <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 backdrop-blur">
+                <Users className="h-10 w-10 text-white" />
               </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="mx-auto max-w-5xl rounded-3xl border bg-primary px-8 py-10 text-primary-foreground shadow-lg">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em]">Ready to play?</p>
-            <h3 className="text-3xl font-bold">Get your $100K virtual account today.</h3>
-            <p className="text-sm text-primary-foreground/80">Join traders learning together—risk free.</p>
-          </div>
-          <div className="flex gap-3">
-            <a
-              href="/register"
-              className="rounded-lg bg-white px-5 py-3 text-sm font-semibold text-primary shadow hover:bg-slate-100"
-            >
-              Create Account
-            </a>
-            <a
-              href="/leaderboard"
-              className="rounded-lg border border-white px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-white/10"
-            >
-              View Leaderboard
-            </a>
+              <h2 className="text-4xl font-bold tracking-tight sm:text-5xl text-white mb-6">
+                Ready to start trading?
+              </h2>
+              <p className="mx-auto max-w-lg text-lg text-white/80 mb-10">
+                Join thousands of traders learning and competing on PaperStack.
+                Your $100K virtual account is waiting.
+              </p>
+              <Link
+                href="/register"
+                className="group inline-flex items-center gap-2 rounded-xl bg-white px-10 py-5 text-lg font-semibold text-primary shadow-lg transition-all hover:bg-white/90 hover:shadow-xl hover:scale-[1.02]"
+              >
+                Create Free Account
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <p className="mt-8 text-sm text-white/60">
+                No credit card required
+              </p>
+            </div>
           </div>
         </div>
       </section>
     </div>
   );
 }
-
