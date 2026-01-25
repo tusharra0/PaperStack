@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
-  TrendingUp,
   Shield,
   Trophy,
   BarChart3,
   ArrowRight,
   Zap,
-  Target,
   Users,
-  Sparkles,
 } from "lucide-react";
-import { getLeaderboard } from "@/lib/api";
+import { useAuthStore } from "@/stores/authStore";
 import type { LeaderboardEntry } from "@/types";
 
 // Lazy load TradingView widgets for better performance
@@ -69,7 +67,17 @@ const stats = [
 ];
 
 export default function Home() {
-  // Hardcoded fake leaderboard as requested
+  const router = useRouter();
+  const { user, isInitialized } = useAuthStore();
+
+  // Redirect logged-in users to dashboard
+  useEffect(() => {
+    if (isInitialized && user) {
+      router.replace("/dashboard");
+    }
+  }, [isInitialized, user, router]);
+
+  // Hardcoded fake leaderboard
   const leaderboard: LeaderboardEntry[] = [
     { username: "Tushar Rao", total_return_percent: 142.5, rank: 1, total_value: 242500 },
     { username: "Tashiana Laluces", total_return_percent: 128.3, rank: 2, total_value: 228300 },
@@ -77,6 +85,11 @@ export default function Home() {
     { username: "CryptoWhale00", total_return_percent: 76.1, rank: 4, total_value: 176100 },
     { username: "StockMaster_55", total_return_percent: 62.8, rank: 5, total_value: 162800 },
   ];
+
+  // Show nothing while checking auth to prevent flash
+  if (!isInitialized || user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
