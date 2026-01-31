@@ -18,6 +18,7 @@ const startingCapital = 100000.00
 // StockQuoteProvider supplies quotes for pricing.
 type StockQuoteProvider interface {
 	GetQuoteWithCache(ctx context.Context, symbol string) (models.StockQuote, error)
+	GetHistoricalPrices(ctx context.Context, symbol, period string) (models.StockHistoryResponse, error)
 }
 
 // GetPortfolioWithHoldings builds a portfolio response with live prices and aggregates.
