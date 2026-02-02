@@ -6,7 +6,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import StockChart from "@/components/StockChart";
 import TradeModal from "@/components/TradeModal";
 import LivePrice from "@/components/LivePrice";
-import { getPortfolio, getStockQuote } from "@/lib/api";
+import WatchlistStar from "@/components/WatchlistStar";
+import { getPortfolio, getStockQuote, checkBadges } from "@/lib/api";
 import type { HoldingWithPrice, PortfolioResponse, StockQuote, TradeResponse } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,8 @@ export default function TradePage() {
   const handleTradeSuccess = async (_resp: TradeResponse) => {
     const updated = await getPortfolio();
     setPortfolio(updated);
+    // Check for new badges after trade
+    checkBadges().catch(() => {});
   };
 
   return (
@@ -78,7 +81,8 @@ export default function TradePage() {
               </div>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <WatchlistStar symbol={symbol} />
             <button
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
               onClick={() => {

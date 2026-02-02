@@ -32,6 +32,7 @@ func main() {
 	leaderboardSvc := services.NewLeaderboardService(queries, stockSvc)
 	snapshotSvc := services.NewSnapshotService(queries, stockSvc)
 	broadcaster := services.NewPriceBroadcaster(stockSvc)
+	badgeSvc := services.NewBadgeService(queries, stockSvc)
 
 	// Start background jobs and websockets
 	ctx := context.Background()
@@ -74,6 +75,19 @@ func main() {
 		api.GET("/leaderboard", handlers.GetLeaderboardHandler(leaderboardSvc))
 		api.POST("/trades", handlers.ExecuteTradeHandler(tradeSvc))
 		api.GET("/trades", handlers.GetTransactionsHandler(queries))
+
+		// Watchlist
+		api.GET("/watchlist", handlers.GetWatchlistHandler(queries, stockSvc))
+		api.POST("/watchlist", handlers.AddWatchlistHandler(queries, stockSvc))
+		api.DELETE("/watchlist/:symbol", handlers.RemoveWatchlistHandler(queries))
+		api.GET("/watchlist/:symbol", handlers.IsWatchedHandler(queries))
+
+		// Badges
+		api.GET("/badges", handlers.GetBadgesHandler(badgeSvc))
+		api.POST("/badges/check", handlers.CheckBadgesHandler(badgeSvc))
+
+		// Stats
+		api.GET("/stats", handlers.GetTradeStatsHandler(queries))
 	}
 
 	addr := fmt.Sprintf(":%s", cfg.Port)

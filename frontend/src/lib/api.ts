@@ -13,6 +13,11 @@ import type {
   User,
   LeaderboardResponse,
   PortfolioHistoryResponse,
+  WatchlistResponse,
+  WatchlistItemWithPrice,
+  BadgesResponse,
+  CheckBadgesResponse,
+  TradeStats,
 } from "@/types";
 
 export type ApiError = {
@@ -130,6 +135,49 @@ export const getTransactions = async (params?: {
   const res = await api.get<TransactionListResponse>("/api/trades", {
     params,
   });
+  return res.data;
+};
+
+// Watchlist
+export const getWatchlist = async (): Promise<WatchlistResponse> => {
+  const res = await api.get<WatchlistResponse>("/api/watchlist");
+  return res.data;
+};
+
+export const addToWatchlist = async (
+  symbol: string
+): Promise<WatchlistItemWithPrice> => {
+  const res = await api.post<WatchlistItemWithPrice>("/api/watchlist", {
+    symbol,
+  });
+  return res.data;
+};
+
+export const removeFromWatchlist = async (symbol: string): Promise<void> => {
+  await api.delete(`/api/watchlist/${symbol}`);
+};
+
+export const isWatched = async (
+  symbol: string
+): Promise<{ watched: boolean }> => {
+  const res = await api.get<{ watched: boolean }>(`/api/watchlist/${symbol}`);
+  return res.data;
+};
+
+// Badges
+export const getBadges = async (): Promise<BadgesResponse> => {
+  const res = await api.get<BadgesResponse>("/api/badges");
+  return res.data;
+};
+
+export const checkBadges = async (): Promise<CheckBadgesResponse> => {
+  const res = await api.post<CheckBadgesResponse>("/api/badges/check");
+  return res.data;
+};
+
+// Trade Stats
+export const getTradeStats = async (): Promise<TradeStats> => {
+  const res = await api.get<TradeStats>("/api/stats");
   return res.data;
 };
 

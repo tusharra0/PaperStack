@@ -1,49 +1,53 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"sort"
 
-	"paperstack/config"
-	pdb "paperstack/db"
+	"github.com/joho/godotenv"
+	"github.com/lib/pq"
+	"database/sql"
 )
 
 func main() {
-	cfg := config.Load()
+	_ = godotenv.Load()
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
 
-	db, err := pdb.ConnectPostgres(cfg.DatabaseURL)
+	// lib/pq needs the connection string parsed
+	_ = pq.Driver{}
+
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("connect postgres: %v", err)
+		log.Fatalf("failed to connect: %v", err)
 	}
 	defer db.Close()
 
-	migrationsDir := filepath.Join("db", "migrations")
-	entries, err := os.ReadDir(migrationsDir)
-	if err != nil {
-		log.Fatalf("read migrations dir: %v", err)
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping: %v", err)
+	}
+	fmt.Println("Connected to database.")
+
+	migrations := []string{
+		"db/migrations/001_initial_schema.sql",
+		"db/migrations/002_watchlist_badges.sql",
 	}
 
-	// Sort by filename to ensure order.
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Name() < entries[j].Name()
-	})
-
-	for _, e := range entries {
-		if e.IsDir() {
-			continue
-		}
-		path := filepath.Join(migrationsDir, e.Name())
-		sqlBytes, err := os.ReadFile(path)
+	for _, path := range migrations {
+		data, err := os.ReadFile(path)
 		if err != nil {
-			log.Fatalf("read migration %s: %v", path, err)
+			log.Fatalf("failed to read %s: %v", path, err)
 		}
-		log.Printf("Applying migration %s", e.Name())
-		if _, err := db.Exec(string(sqlBytes)); err != nil {
-			log.Fatalf("apply migration %s: %v", e.Name(), err)
+		fmt.Printf("Running %s...\n", path)
+		_, err = db.Exec(string(data))
+		if err != nil {
+			log.Fatalf("migration %s failed: %v", path, err)
 		}
+		fmt.Printf("  ✓ %s applied\n", path)
 	}
 
-	log.Println("Migrations applied successfully")
+	fmt.Println("All migrations applied successfully.")
 }

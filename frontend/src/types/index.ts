@@ -134,3 +134,53 @@ export interface PortfolioHistoryResponse {
   points: SnapshotPoint[];
 }
 
+// Watchlist
+export interface WatchlistItemWithPrice {
+  id: string;
+  symbol: string;
+  price: number;
+  change_percent: number;
+  added_at: string;
+}
+
+export interface WatchlistResponse {
+  items: WatchlistItemWithPrice[];
+}
+
+// Badges
+export interface BadgeDefinition {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface UserBadge {
+  badge_id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earned_at: string;
+}
+
+export interface BadgesResponse {
+  badges: UserBadge[];
+}
+
+export interface CheckBadgesResponse {
+  new_badges: UserBadge[];
+}
+
+// Performance Stats
+export interface TradeStats {
+  total_trades: number;
+  win_rate: number;
+  best_trade: number;
+  best_symbol: string;
+  worst_trade: number;
+  worst_symbol: string;
+  avg_hold_days: number;
+  most_traded: string;
+  most_traded_count: number;
+}
+

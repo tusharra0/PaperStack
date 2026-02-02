@@ -57,3 +57,17 @@ type User struct {
 	CreatedAt    time.Time    `db:"created_at" json:"created_at"`
 	UpdatedAt    sql.NullTime `db:"updated_at" json:"updated_at"`
 }
+
+type UserBadge struct {
+	ID       uuid.UUID `db:"id" json:"id"`
+	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+	BadgeID  string    `db:"badge_id" json:"badge_id"`
+	EarnedAt time.Time `db:"earned_at" json:"earned_at"`
+}
+
+type WatchlistItem struct {
+	ID      uuid.UUID `db:"id" json:"id"`
+	UserID  uuid.UUID `db:"user_id" json:"user_id"`
+	Symbol  string    `db:"symbol" json:"symbol"`
+	AddedAt time.Time `db:"added_at" json:"added_at"`
+}

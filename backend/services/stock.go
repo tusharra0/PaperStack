@@ -184,20 +184,32 @@ func (s *StockService) GetHistoricalPrices(ctx context.Context, symbol, period s
 }
 
 // Helpers
-func (s *StockService) getJSON(ctx context.Context, url string, target interface{}) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func (s *StockService) getJSON(ctx context.Context, reqURL string, target interface{}) error {
+	// Retry up to 3 times on rate-limit (429)
+	for attempt := 0; attempt < 3; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+		if err != nil {
+			return err
+		}
+		resp, err := s.client.Do(req)
+		if err != nil {
+			return err
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("stock api error: %s", resp.Status)
+		if resp.StatusCode == http.StatusTooManyRequests {
+			resp.Body.Close()
+			time.Sleep(time.Duration(attempt+1) * time.Second)
+			continue
+		}
+
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("stock api error: %s", resp.Status)
+		}
+
+		return json.NewDecoder(resp.Body).Decode(target)
 	}
 
-	return json.NewDecoder(resp.Body).Decode(target)
+	return fmt.Errorf("stock api rate limited, try again shortly")
 }

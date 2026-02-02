@@ -15,6 +15,7 @@ import {
   X,
   ChevronDown,
   TrendingUp,
+  GitCompareArrows,
 } from "lucide-react";
 
 export function Navbar() {
@@ -82,6 +83,13 @@ export function Navbar() {
                 >
                   <Trophy className="h-4 w-4" />
                   Leaderboard
+                </Link>
+                <Link
+                  href="/compare"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <GitCompareArrows className="h-4 w-4" />
+                  Compare
                 </Link>
 
                 {/* User Menu */}
@@ -187,6 +195,14 @@ export function Navbar() {
                 >
                   <Trophy className="h-4 w-4" />
                   Leaderboard
+                </Link>
+                <Link
+                  href="/compare"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <GitCompareArrows className="h-4 w-4" />
+                  Compare
                 </Link>
                 <div className="my-2 border-t border-border" />
                 <button
